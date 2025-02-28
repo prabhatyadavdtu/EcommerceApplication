@@ -317,9 +317,17 @@ public class UserController {
         boolean isVerified = userService.verifyEmailToken(token);
 
         if (isVerified) {
-            return ResponseEntity.ok("Email verified successfully!");
+            return ResponseEntity.ok("<html><body style='text-align: center; padding: 50px; font-family: Arial, sans-serif;'>"
+                    + "<h1 style='color: green;'>Email Verified Successfully! 🎉</h1>"
+                    + "<p>Your email has been successfully verified. You can now log in.</p>"
+                    + "<a href='/' style='background-color: blue; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Go to Login</a>"
+                    + "</body></html>");
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired token.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("<html><body style='text-align: center; padding: 50px; font-family: Arial, sans-serif;'>"
+                    + "<h1 style='color: red;'>Verification Failed ❌</h1>"
+                    + "<p>Invalid or expired token. Please request a new verification email.</p>"
+                    + "<a href='/resend-verification' style='background-color: red; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Resend Email</a>"
+                    + "</body></html>");
         }
     }
 

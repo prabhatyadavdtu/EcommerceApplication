@@ -26,7 +26,7 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            String verificationLink = frontendUrl + "/verify?token=" + token;
+            String verificationLink = frontendUrl + "/api/users/verify?token=" + token;
             String emailContent = createVerificationEmailTemplate(verificationLink);
 
             helper.setFrom(fromEmail);
