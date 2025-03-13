@@ -1,6 +1,7 @@
 package com.example.ecommerceapplication.service;
 
 import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -8,6 +9,8 @@ import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.example.ecommerceapplication.model.User;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -21,6 +24,24 @@ public class JwtService {
 
     @Value("${jwt.expirationMs}")
     private int jwtExpirationMs;
+
+    public String generateJwtToken(User user, long expiration) {
+        Date now = new Date();
+        //Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+        Date expiryDate = new Date(now.getTime() + expiration);
+
+        // Create signing key from secret bytes
+        Key signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+
+        return Jwts.builder()
+                .setSubject(user.getUsername())
+                .claim("id", user.getId())
+                .claim("role", user.getRole().name())
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(signingKey)
+                .compact();
+    }
 
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
