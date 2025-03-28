@@ -34,4 +34,9 @@ public class ProductService {
         BeanUtils.copyProperties(product, existingProduct, "id");
         return productRepository.save(existingProduct);
     }
+
+    public void deleteProductById(Long id) {
+        Product product = getProduct(id);
+        productRepository.delete(product);
+    }    
 }

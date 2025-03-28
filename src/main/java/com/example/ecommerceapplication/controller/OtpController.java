@@ -2,7 +2,9 @@ package com.example.ecommerceapplication.controller;
 
 import com.example.ecommerceapplication.dto.OtpRequest;
 import com.example.ecommerceapplication.dto.OtpResponse;
+import com.example.ecommerceapplication.dto.OtpVerificationRequest;
 import com.example.ecommerceapplication.service.OtpService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +23,7 @@ public class OtpController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<OtpResponse> verifyOtp(@RequestBody OtpRequest request) {
+    public ResponseEntity<OtpResponse> verifyOtp(@RequestBody OtpVerificationRequest request) {
         return ResponseEntity.ok(otpService.verifyOtp(request.getPhoneNumber(), request.getOtp()));
     }
 }
