@@ -25,9 +25,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.ecommerceapplication.dto.AdminRegistrationRequest;
 import com.example.ecommerceapplication.dto.CustomerRegistrationRequest;
 import com.example.ecommerceapplication.dto.ErrorResponse;
+import com.example.ecommerceapplication.dto.FirebaseUserDto;
 import com.example.ecommerceapplication.dto.InitialSuperAdminRequest;
 import com.example.ecommerceapplication.dto.LoginRequest;
 import com.example.ecommerceapplication.dto.LoginResponse;
+import com.example.ecommerceapplication.dto.UserResponseDto;
 import com.example.ecommerceapplication.exception.EmailAlreadyExistsException;
 import com.example.ecommerceapplication.exception.MessageResponse;
 import com.example.ecommerceapplication.exception.UsernameAlreadyExistsException;
@@ -243,6 +245,53 @@ public class UserController {
         }
     }
 
+    // @PostMapping("/google-auth")
+    // public ResponseEntity<?> handleGoogleAuth(@RequestBody GoogleAuthDto googleAuthDto) {
+    //     try {
+    //         // Check if user exists by firebaseUid
+    //         Optional<User> existingUser = userService.findByFirebaseUid(googleAuthDto.getFirebaseUid());
+            
+    //         User user;
+    //         if (existingUser.isPresent()) {
+    //             // Update existing user
+    //             user = existingUser.get();
+    //             user.setEmail(googleAuthDto.getEmail());
+    //             user.setDisplayName(googleAuthDto.getDisplayName());
+    //             user.setPhotoUrl(googleAuthDto.getPhotoURL());
+    //         } else {
+    //             // Create new user
+    //             user = new User();
+    //             user.setFirebaseUid(googleAuthDto.getFirebaseUid());
+    //             user.setEmail(googleAuthDto.getEmail());
+    //             user.setDisplayName(googleAuthDto.getDisplayName());
+    //             user.setPhotoUrl(googleAuthDto.getPhotoURL());
+    //             //user.setAuthProvider("google");
+    //         }
+            
+    //         // Save user
+    //         User savedUser = userService.saveUser(user);
+            
+    //         return ResponseEntity.ok(savedUser);
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //                 .body("Error processing Google auth: " + e.getMessage());
+    //     }
+    // }
+
+    @PostMapping("/google")
+    public ResponseEntity<?> handleGoogleAuth(@RequestBody FirebaseUserDto firebaseUserDto) {
+        try {
+            User user = userService.registerGoogleUser(firebaseUserDto);
+            
+            // You may want to include cart info in response
+            UserResponseDto response = new UserResponseDto(user);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error processing Google auth: " + e.getMessage());
+        }
+    }
+    
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@CookieValue(value = "refreshToken", required = false) String refreshToken) {
         try {

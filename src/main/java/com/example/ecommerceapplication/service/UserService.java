@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.ecommerceapplication.dto.AdminRegistrationRequest;
 import com.example.ecommerceapplication.dto.CustomerRegistrationRequest;
+import com.example.ecommerceapplication.dto.FirebaseUserDto;
 import com.example.ecommerceapplication.dto.InitialSuperAdminRequest;
 import com.example.ecommerceapplication.exception.EmailAlreadyExistsException;
 import com.example.ecommerceapplication.exception.InvalidTokenException;
@@ -33,7 +34,7 @@ import jakarta.transaction.Transactional;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -69,6 +70,65 @@ public class UserService {
         emailService.sendVerificationEmail(customer.getEmail(), verificationToken);
 
         return userRepository.save(customer);
+    }
+
+    public User registerGoogleUser(FirebaseUserDto firebaseUserDto) {
+        // Check if user exists by email
+        Optional<User> existingUser = userRepository.findByEmail(firebaseUserDto.getEmail());
+
+        User user;
+        if (existingUser.isPresent()) {
+            // Update existing user
+            user = existingUser.get();
+        } else {
+            // Create new user
+            user = new User();
+            // Generate username from email (or use display name)
+            String username = generateUsernameFromEmail(firebaseUserDto.getEmail());
+            user.setUsername(username);
+            user.setStatus(UserStatus.ACTIVE);
+            user.setRole(Role.USER); // Or determine role based on your business logic
+        }
+
+        // Set/update Google-specific fields
+        user.setEmail(firebaseUserDto.getEmail());
+        if (firebaseUserDto.isEmailVerified()) {
+            user.setEmailVerified(firebaseUserDto.isEmailVerified());
+        } else {
+            String verificationToken = generateVerificationToken();
+            user.setVerificationToken(verificationToken);
+            emailService.sendVerificationEmail(firebaseUserDto.getEmail(), verificationToken);
+            user.setEmailVerified(firebaseUserDto.isEmailVerified());
+        }
+        // No need to set password for OAuth users
+
+        // Generate a token if needed
+        if (user.getToken() == null) {
+            user.setToken(UUID.randomUUID().toString());
+            user.setRevoked(false);
+            user.setTokenExpired(false);
+        }
+
+        return userRepository.save(user);
+    }
+
+    public String generateUsernameFromEmail(String email) {
+        if (email == null)
+            return "user_" + UUID.randomUUID().toString().substring(0, 8);
+
+        // Extract part before @ and remove special characters
+        String usernameBase = email.split("@")[0].replaceAll("[^a-zA-Z0-9]", "");
+
+        // Check if username exists
+        String username = usernameBase;
+        int counter = 1;
+
+        while (userRepository.findByUsername(username).isPresent()) {
+            username = usernameBase + counter;
+            counter++;
+        }
+
+        return username;
     }
 
     // Admin creation - only possible through invitation or initial setup
@@ -178,7 +238,7 @@ public class UserService {
     }
 
     // public User findByToken(String token) {
-    //     return userRepository.findByToken(token).orElse(null);
+    // return userRepository.findByToken(token).orElse(null);
     // }
 
     public boolean verifyEmailToken(String token) {

@@ -75,7 +75,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/captcha/**").permitAll()
-                        //.requestMatchers("/api/users/**").permitAll()
+                        .requestMatchers("/api/cart/**").permitAll()
                         .requestMatchers("/api/users/**", "/api/products/**").permitAll() 
                         .requestMatchers("/swagger-ui/**",
                                 "/swagger-ui.html",
